@@ -3,6 +3,9 @@
 #include<vector>
 #include<fstream>
 #include<string>
+#include<limits>
+#include<algorithm>
+#include<sys/stat.h>
 using namespace std;
 
 int ROWS;
@@ -12,7 +15,7 @@ struct Square{
   int f;
   int g;
   int h;
-  int value;
+  char value;
   int x;
   int y;
   Square *parent;
@@ -390,6 +393,31 @@ int find_wall(vector<Square *> cl, Square *wall)
   }
 }
 
+bool fileExists(const string &filename){
+  struct stat buf;
+  if(stat(filename.c_str(), &buf) != -1)
+  {
+    return true;
+  }
+  return false;
+}
+
+bool cin_int(int &variable, vector<int> &input, bool coord){
+  if(!(cin >> variable)){
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    return true;
+  }
+  else{
+    input.push_back(variable);
+    if(!coord){
+      cin.clear();
+      cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    }
+    return false;
+  }
+}
+
 
 int main()
 {
@@ -418,6 +446,8 @@ int main()
   int s_end2;
   int wall_grid1;
   int wall_grid2;
+  ifstream m;
+  vector<int> input;
 
   cout << "Do you want to load a map?(Y/N): ";
   do
@@ -431,7 +461,6 @@ int main()
       {
         cin >> filename;
        
-        ifstream m;
         m.open(filename.c_str(), ios::in);
 
         if(!m)
@@ -448,114 +477,241 @@ int main()
       preload = false;
       break;
     }
-    else
+    else{
       cout << "Incorrect input. Load map?(Y/N):  ";
+      }
+  }while(1);
+  
+  do
+  {
+    bool cin_error = false;
+    if(!preload)
+    {
+      cout << "Enter the number of rows: ";
+      cin_error = cin_int(ROWS, input, false);
+    }
+    else
+      m >> ROWS; 
+
+    if(!preload){
+      cout << "Enter the number of columns: ";
+      cin_error = cin_int(COLUMNS, input, false);
+    }
+    else
+      m >> COLUMNS;
+
+    if(!cin_error)
+      break;
+    else{
+      cout << "Invalid input. Please try again." << endl;
+    }
   }while(1);
 
-  if(!preload)
+  //instantiate the grid
+  grid = new Square**[ROWS];
+  for(int i = 0; i < ROWS;i++)
   {
-    cout << "Enter the number of rows: ";
-    cin >> ROWS;
-    cout << "Enter the number of columns: ";
-    cin >> COLUMNS;
+    grid[i] = new Square*[COLUMNS];
+  }
 
-    //instantiate the grid
-    grid = new Square**[ROWS];
-    for(int i = 0; i < ROWS;i++)
+  for(int i = 0; i < ROWS; i++)
+  {
+    for(int j = 0; j < COLUMNS; j++)
     {
-      grid[i] = new Square*[COLUMNS];
-    }
+      grid[i][j] = new Square;
+      grid[i][j]->g = 0;
+      grid[i][j]->f = 0;
+      grid[i][j]->x = i;
+      grid[i][j]->y = j;
+      grid[i][j]->value = '.';
+      grid[i][j]->parent = NULL;
+    } 
+  }
 
-    for(int i = 0; i < ROWS; i++)
-    {
-      for(int j = 0; j < COLUMNS; j++)
-      {
-        grid[i][j] = new Square;
-        grid[i][j]->g = 0;
-        grid[i][j]->f = 0;
-        grid[i][j]->x = i;
-        grid[i][j]->y = j;
-        grid[i][j]->value = 0;
-        grid[i][j]->parent = NULL;
-      } 
-    }
+  cout << "R: " << ROWS  << " C: " << COLUMNS << endl;
 
-    cout << "R: " << ROWS  << " C: " << COLUMNS << endl;
-
-    print(grid, 'v');
+  print(grid, 'v');
+  
+  if(!preload)
     cout << "Enter the coordinates for the starting node(ex. '2 1' for 2 down 1 across): ";
+  do
+  {
+    bool cin_error = false;
+    if(!preload){
+      cin_error = cin_int(s_start1, input, true);
+      cin_error = cin_int(s_start2, input, true);
+    }
+    else{
+      m >> s_start1;
+      m >> s_start2;
+    }
+    if(cin_error){
+      cout << "Invalid input. Please try again: ";
+    }
+    else if(s_start1 < 1 || s_start1 > ROWS || s_start2 < 1 || s_start2 > COLUMNS)
+      cout << s_start1 << " " << s_start2 << " is outside the domain of the grid. Enter coordinates for the starting node: ";
+    else
+      break;
+  }while(1);
 
-    do
-    {
-      cin >> s_start1;
-      cin >> s_start2;
-      if(s_start1 < 1 || s_start1 > ROWS || s_start2 < 1 || s_start2 > COLUMNS)
-        cout << s_start1 << " " << s_start2 << " is outside the domain of the grid. Enter coordinates for the starting node: ";
-      else
-        break;
-    }while(1);
+  grid[s_start1-1][s_start2-1]->value = 'S';
+  start[0] = s_start1-1;
+  start[1] = s_start2-1;
+  cur_square = start;
 
-    grid[s_start1-1][s_start2-1]->value = 1;
-    start[0] = s_start1-1;
-    start[1] = s_start2-1;
-    cur_square = start;
+  begin = grid[s_start1-1][s_start2-1];
+  pcSquare = begin;
 
-    begin = grid[s_start1-1][s_start2-1];
-    pcSquare = begin;
+  cout << endl;
+  print(grid, 'v');
 
-
-    print(grid, 'v');
+  if(!preload)
     cout << "Enter the coordinates for the ending node: ";
-    do
+  do
+  {
+    bool cin_error = false;
+   if(!preload){
+     cin_error = cin_int(s_end1, input, true);
+     cin_error = cin_int(s_end2, input, true);
+   }
+   else{
+    m >> s_end1;
+    m >> s_end2;
+   }
+   if(cin_error){
+      cout << "Invalid input. Please try again: ";
+   }
+   else if(s_end1 == s_start1 && s_end2 == s_start2)
+   {
+    cout << "Ending coordinates cannot equal starting coordinates. Please enter the coordinates for the ending node: ";
+   }
+   else
+   {
+
+    if(s_end1 < 1 || s_end1 > ROWS || s_end2 < 1 || s_end2 > COLUMNS)
+      cout << s_end1 << " " << s_end2 << " is outside the domain of the grid. Enter coordinates of the ending node: ";
+    else
+      break;
+   }
+  }while(1);
+
+  grid[s_end1-1][s_end2-1]->value = 'E';
+  finish[0] = s_end1-1;
+  finish[1] = s_end2-1;
+
+  end = grid[s_end1-1][s_end2-1];
+
+  print(grid, 'v');
+
+  do
+  {
+    bool cin_error = false;
+    cout << "Enter the coordinates for a wall or enter the coordinates to change a wall node to a standard grid(enter 0 to continue): ";
+
+    if(!preload)
+      cin_error = cin_int(wall_grid1, input, true);
+    else
+      m >> wall_grid1;
+
+    if(!cin_error && wall_grid1 == 0)
+      break;
+
+    if(!preload)
+      cin_error = cin_int(wall_grid2, input, true);
+    else
+      m >> wall_grid2;
+    if(cin_error){
+      cout << "Invalid input. Please try again: ";
+    }
+    else if(wall_grid1 < 1 || wall_grid1 > ROWS || wall_grid2 < 1 || wall_grid2 > COLUMNS)
+      cout << wall_grid1 << " " << wall_grid2 << "is outside the domain of the grid. Enter coordinates for a wall square: ";
+    else
     {
-     cin >> s_end1;
-     cin >> s_end2;
-     if(s_end1 == s_start1 && s_end2 == s_start2)
-     {
-      cout << "Ending coordinates cannot equal starting coordinates. Please enter the coordinates for the ending node: ";
-     }
-     else
-     {
-
-      if(s_end1 < 1 || s_end1 > ROWS || s_end2 < 1 || s_end2 > COLUMNS)
-        cout << s_end1 << " " << s_end2 << " is outside the domain of the grid. Enter coordinates of the ending node: ";
-      else
-        break;
-     }
-    }while(1);
-
-    grid[s_end1-1][s_end2-1]->value = 2;
-    finish[0] = s_end1-1;
-    finish[1] = s_end2-1;
-
-    end = grid[s_end1-1][s_end2-1];
-
-
-    do
-    {
-      print(grid, 'v');
-      cout << "Enter the coordinates for a wall or enter the coordinates to change a wall node to a standard grid(enter 0 to continue): ";
-      cin >> wall_grid1;
-      if(wall_grid1 == 0)
-        break;
-      cin >> wall_grid2;
-      if(wall_grid1 < 1 || wall_grid1 > ROWS || wall_grid2 < 1 || wall_grid2 > COLUMNS)
-        cout << wall_grid1 << " " << wall_grid2 << "is outside the domain of the grid. Enter coordinates for a wall square: ";
+      if(!isin(grid[wall_grid1-1][wall_grid2-1], cl))
+      {
+        grid[wall_grid1-1][wall_grid2-1]->value = 'W';
+        cl.push_back(grid[wall_grid1-1][wall_grid2-1]);
+      }
       else
       {
-        if(!isin(grid[wall_grid1-1][wall_grid2-1], cl))
-        {
-          grid[wall_grid1-1][wall_grid2-1]->value = 3;
-          cl.push_back(grid[wall_grid1-1][wall_grid2-1]);
+        grid[wall_grid1-1][wall_grid2-1]->value = '.';
+        cl.erase(cl.begin() + find_wall(cl, grid[wall_grid1-1][wall_grid2-1]));
+      }
+    }
+  print(grid, 'v');
+  }while(1);
+
+  if(!preload){
+    char answer; 
+
+
+    cout << "Do you want to save this grid layout?(Y/N): ";
+    cin >> answer;
+    answer = tolower(answer);
+    if(answer == 'y')
+    {
+      string save_file;
+      bool write_cont = false;
+      do{
+        do{
+          cout << "Enter the name of the save file(Include .txt): ";
+          cin >> save_file;
+
+          save_file.erase(remove_if(save_file.begin(), save_file.end(), ::isspace), save_file.end());
+
+          cout << save_file.substr(save_file.length()-4) << endl;
+          if(save_file.substr(save_file.length()-4) != ".txt")
+          {
+
+            cout << "Incorrect input. Please try again." << endl;
+          }
+          else
+            break;
+        }while(1);
+
+        ifstream save_grid(filename.c_str());
+        
+        if(fileExists(save_file)){
+          char overwrite;
+          cout << "File already exists do you want to overwrite(Y/N)?: ";
+          cin >> overwrite;
+          overwrite = tolower(overwrite);
+          if(overwrite == 'y'){
+            if(remove(save_file.c_str()) != 0)
+              cout << "Error deleting file" << endl;
+            else{
+              cout << "File overwritten" << endl;
+              write_cont = true;
+            }
+          }
         }
         else
+          write_cont = true;
+        save_grid.close();
+      }while(!write_cont);
+
+      ofstream save_grid;
+
+      save_grid.open(save_file.c_str(), ios::out);
+      save_grid << to_string(input[0]) + '\n';
+      save_grid << to_string(input[1]) + '\n';
+
+      if(input.size() > 3){
+        for(int i = 2; i < input.size();i += 2)
         {
-          grid[wall_grid1-1][wall_grid2-1]->value = 0;
-          cl.erase(cl.begin() + find_wall(cl, grid[wall_grid1-1][wall_grid2-1]));
+          if(input[i] == 0)
+            break;
+          string text = "";
+          text = to_string(input[i]) + " " + to_string(input[i+1]) + '\n';
+          save_grid << text;
         }
+      save_grid << "0";
       }
-    }while(1);
+    }
   }
+  cin.ignore();
+  cout << "Press Enter to continue" << endl;
+  cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
 /*
   for(int i = 0; i < ROWS; i++)
@@ -708,7 +864,7 @@ int main()
     
     //set lowest equal to last lowest
     //lowest->parent = pcSquare;
-    lowest->value = 6;
+    lowest->value = 'c';
 
     //change parent for future lowest
     pcSquare = lowest;
@@ -744,14 +900,15 @@ int main()
   print(grid, 'b');
 
   cout << "go to parents" << endl;
-  int pValue = 7;
   for(Square *parents = end; parents != begin; parents = parents->parent)
   {
     cout << "go back" << endl;
     if(parents)
     {
-      parents->value = pValue;
-      pValue++;
+      if(parents != end)
+      {
+        parents->value = '=';
+      }
     }
     else
     {
@@ -759,6 +916,7 @@ int main()
       break;
     }
   }
+  end->value = 'E';
 
   cout << "H: " << endl;
   print(grid, 'h');
