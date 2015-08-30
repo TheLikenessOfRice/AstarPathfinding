@@ -446,6 +446,8 @@ int main()
   int s_end2;
   int wall_grid1;
   int wall_grid2;
+  int wall_grid3;
+  int wall_grid4;
   ifstream m;
   vector<int> input;
 
@@ -605,8 +607,11 @@ int main()
 
   do
   {
+    wall_grid3 = 0;
+    wall_grid4 = 0;
     bool cin_error = false;
-    cout << "Enter the coordinates for a wall or enter the coordinates to change a wall node to a standard grid(enter 0 to continue): ";
+    bool long_wall = true;
+    cout << "Enter the coordinates to add or remove a wall('2 1' for 2 down and 1 across) or enter two coordinates for a section of wall('2 1 9 1') enter 0 to continue: ";
 
     if(!preload)
       cin_error = cin_int(wall_grid1, input, true);
@@ -616,29 +621,109 @@ int main()
     if(!cin_error && wall_grid1 == 0)
       break;
 
-    if(!preload)
+
+    cout << "CE1: " << cin_error << endl;
+
+    if(!preload){
       cin_error = cin_int(wall_grid2, input, true);
+      if(cin.get() == '\n'){
+        cout << "short wall" << endl;
+        long_wall = false;
+      }
+    }
+
     else
       m >> wall_grid2;
+    if(long_wall){
+      if(!preload)
+      {
+        if(cin >> wall_grid3)
+        {
+          cout << "CE2: " << cin_error << endl;
+          if(!(cin >> wall_grid4))
+          {
+            cout << "CE3: " << cin_error << endl;
+            cin_error = true;
+          }
+        }
+        else
+          cin_error = true;
+      }
+    }
+    cout << "CE4: " << cin_error << endl;
+
+
+    cout << "W1: " << wall_grid1 << " W2: " << wall_grid2 << " W3: " << wall_grid3 << " W4: " << wall_grid4 << endl;
+    if(long_wall){
+      if(wall_grid3 == 0 && wall_grid4 == 0)
+      cin_error = true;
+    }
+
+
+    cout << "CE5: " << cin_error << endl;
+
+    cout << "W1: " << wall_grid1 << " W2: " << wall_grid2 << " W3: " << wall_grid3 << " W4: " << wall_grid4 << endl;
     if(cin_error){
       cout << "Invalid input. Please try again: ";
     }
+
     else if(wall_grid1 < 1 || wall_grid1 > ROWS || wall_grid2 < 1 || wall_grid2 > COLUMNS)
       cout << wall_grid1 << " " << wall_grid2 << "is outside the domain of the grid. Enter coordinates for a wall square: ";
+
     else
     {
-      if(!isin(grid[wall_grid1-1][wall_grid2-1], cl))
+      if(wall_grid3 > 0 && wall_grid3 < ROWS && wall_grid4 > 0 && wall_grid4 < COLUMNS)
+      {
+        cout << "here" << endl;
+        int difference;
+        int adj_wall;
+        if(wall_grid3 == wall_grid1)
+        {
+          //horizontal
+          cout << "3 and 1" << endl;
+          difference = abs(wall_grid4 - wall_grid2);
+          if(wall_grid4 > wall_grid2)
+            adj_wall = wall_grid2;
+          else
+            adj_wall = wall_grid4;
+          cout << "D: " << difference << endl;
+          for(int i = 0; i <= difference; i++)
+          {
+            cout << "case: " << i << endl;
+            grid[(wall_grid1-1)][(adj_wall-1) + i]->value = 'W';   
+            cl.push_back(grid[(wall_grid1-1)][(adj_wall-1) + i]);
+          }
+        }
+        else{
+          //vertical
+          cout << "here2" << endl;
+          difference = abs(wall_grid3 - wall_grid1);
+          if(wall_grid3 > wall_grid1)
+            adj_wall = wall_grid1;
+          else
+            adj_wall = wall_grid3;
+          for(int i = 0; i <= difference; i++)
+          {
+            grid[(adj_wall-1) + i][(wall_grid2-1)]->value = 'W';   
+            cl.push_back(grid[(adj_wall-1) + i][wall_grid2-1]);
+          }
+        }
+      }
+      
+      else if(!isin(grid[wall_grid1-1][wall_grid2-1], cl))
       {
         grid[wall_grid1-1][wall_grid2-1]->value = 'W';
         cl.push_back(grid[wall_grid1-1][wall_grid2-1]);
       }
+          
       else
       {
         grid[wall_grid1-1][wall_grid2-1]->value = '.';
         cl.erase(cl.begin() + find_wall(cl, grid[wall_grid1-1][wall_grid2-1]));
       }
+      print(grid, 'v');
     }
-  print(grid, 'v');
+
   }while(1);
 
   if(!preload){
