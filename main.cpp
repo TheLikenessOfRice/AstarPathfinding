@@ -409,7 +409,6 @@ bool cin_int(int &variable, vector<int> &input, bool coord){
     return true;
   }
   else{
-    input.push_back(variable);
     if(!coord){
       cin.clear();
       cin.ignore(numeric_limits<streamsize>::max(), '\n');
@@ -491,6 +490,7 @@ int main()
     {
       cout << "Enter the number of rows: ";
       cin_error = cin_int(ROWS, input, false);
+      
     }
     else
       m >> ROWS; 
@@ -508,6 +508,9 @@ int main()
       cout << "Invalid input. Please try again." << endl;
     }
   }while(1);
+
+  input.push_back(ROWS);
+  input.push_back(COLUMNS);
 
   //instantiate the grid
   grid = new Square**[ROWS];
@@ -556,6 +559,10 @@ int main()
       break;
   }while(1);
 
+  input.push_back(s_start1);
+  input.push_back(s_start2);
+  input.push_back(0);
+
   grid[s_start1-1][s_start2-1]->value = 'S';
   start[0] = s_start1-1;
   start[1] = s_start2-1;
@@ -597,6 +604,11 @@ int main()
    }
   }while(1);
 
+  input.push_back(s_end1);
+  input.push_back(s_end2);
+  input.push_back(0);
+
+
   grid[s_end1-1][s_end2-1]->value = 'E';
   finish[0] = s_end1-1;
   finish[1] = s_end2-1;
@@ -630,10 +642,17 @@ int main()
         cout << "short wall" << endl;
         long_wall = false;
       }
+
+      input.push_back(wall_grid1);
+      input.push_back(wall_grid2);
     }
 
     else
       m >> wall_grid2;
+
+    if(m.peek() == '\n')
+      long_wall = false;
+
     if(long_wall){
       if(!preload)
       {
@@ -648,8 +667,20 @@ int main()
         }
         else
           cin_error = true;
+
+        input.push_back(wall_grid3);
+        input.push_back(wall_grid4);
+      }
+      else
+      {
+        if(m.peek() != '\n')
+        { 
+          m >> wall_grid3;
+          m >> wall_grid4;
+        }
       }
     }
+    input.push_back(0);
     cout << "CE4: " << cin_error << endl;
 
 
@@ -672,43 +703,44 @@ int main()
 
     else
     {
-      if(wall_grid3 > 0 && wall_grid3 < ROWS && wall_grid4 > 0 && wall_grid4 < COLUMNS)
-      {
-        cout << "here" << endl;
-        int difference;
-        int adj_wall;
-        if(wall_grid3 == wall_grid1)
+        if(wall_grid3 > 0 && wall_grid3 <= ROWS && wall_grid4 > 0 && wall_grid4 <= COLUMNS)
         {
-          //horizontal
-          cout << "3 and 1" << endl;
-          difference = abs(wall_grid4 - wall_grid2);
-          if(wall_grid4 > wall_grid2)
-            adj_wall = wall_grid2;
-          else
-            adj_wall = wall_grid4;
-          cout << "D: " << difference << endl;
-          for(int i = 0; i <= difference; i++)
+          cout << "here" << endl;
+          int difference;
+          int adj_wall;
+          if(wall_grid3 == wall_grid1)
           {
-            cout << "case: " << i << endl;
-            grid[(wall_grid1-1)][(adj_wall-1) + i]->value = 'W';   
-            cl.push_back(grid[(wall_grid1-1)][(adj_wall-1) + i]);
+            //horizontal
+            cout << "3 and 1" << endl;
+            difference = abs(wall_grid4 - wall_grid2);
+            if(wall_grid4 > wall_grid2)
+              adj_wall = wall_grid2;
+            else
+              adj_wall = wall_grid4;
+            cout << "D: " << difference << endl;
+            for(int i = 0; i <= difference; i++)
+            {
+              cout << "case: " << i << endl;
+              grid[(wall_grid1-1)][(adj_wall-1) + i]->value = 'W';   
+              cl.push_back(grid[(wall_grid1-1)][(adj_wall-1) + i]);
+            }
+          }
+          else{
+            //vertical
+            cout << "here2" << endl;
+            difference = abs(wall_grid3 - wall_grid1);
+            if(wall_grid3 > wall_grid1)
+              adj_wall = wall_grid1;
+            else
+              adj_wall = wall_grid3;
+            for(int i = 0; i <= difference; i++)
+            {
+              grid[(adj_wall-1) + i][(wall_grid2-1)]->value = 'W';   
+              cl.push_back(grid[(adj_wall-1) + i][wall_grid2-1]);
+            }
           }
         }
-        else{
-          //vertical
-          cout << "here2" << endl;
-          difference = abs(wall_grid3 - wall_grid1);
-          if(wall_grid3 > wall_grid1)
-            adj_wall = wall_grid1;
-          else
-            adj_wall = wall_grid3;
-          for(int i = 0; i <= difference; i++)
-          {
-            grid[(adj_wall-1) + i][(wall_grid2-1)]->value = 'W';   
-            cl.push_back(grid[(adj_wall-1) + i][wall_grid2-1]);
-          }
-        }
-      }
+
       
       else if(!isin(grid[wall_grid1-1][wall_grid2-1], cl))
       {
@@ -782,15 +814,22 @@ int main()
       save_grid << to_string(input[1]) + '\n';
 
       if(input.size() > 3){
-        for(int i = 2; i < input.size();i += 2)
+        int i = 2;
+        while(i < input.size())
         {
           if(input[i] == 0)
             break;
           string text = "";
-          text = to_string(input[i]) + " " + to_string(input[i+1]) + '\n';
+          if(input[i + 2] == 0){
+            text = to_string(input[i]) + " " + to_string(input[i+1]) + '\n';
+            i += 3;
+          }
+          else{
+            text = to_string(input[i]) + " " + to_string(input[i+1]) + " " + to_string(input[i+2]) + " " + to_string(input[i+3]) + '\n';
+            i += 5;
+          }
           save_grid << text;
         }
-      save_grid << "0";
       }
     }
   }
@@ -798,79 +837,6 @@ int main()
   cout << "Press Enter to continue" << endl;
   cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-/*
-  for(int i = 0; i < ROWS; i++)
-  {
-    for(int j = 0; j < COLUMNS; j++)
-    {
-      grid[i][j] = new Square;
-      grid[i][j]->g = 0;
-      grid[i][j]->f = 0;
-      grid[i][j]->x = i;
-      grid[i][j]->y = j;
-      grid[i][j]->value = 0;
-      grid[i][j]->parent = NULL;
-    } 
- }
- */
-
-  /*
-  cout << "Which grid do you want?(1 or 2)" << endl;
-  cin >> grid_num;
-
-
-  if(grid_num == 1)
-  {
-    start[0] = 2;
-    start[1] = 1;
-    finish[0] = 2;
-    finish[1] = 5;
-    cur_square = start;
-    pcSquare = grid[2][1];
-    begin = grid[2][1];
-    end = grid[2][5];
-    cout << "OEND: " << end << endl;
- 
-    grid[2][1]->value = 1;
-    grid[1][3]->value = 3;
-    grid[2][3]->value = 3;
-    grid[3][3]->value = 3;
-    grid[2][5]->value = 2;
-
-    cl.push_back(grid[1][3]);
-    cl.push_back(grid[2][3]);
-    cl.push_back(grid[3][3]);
-  }
-  else if(grid_num == 2)
-  {
-    start[0] = 4;
-    start[1] = 3;
-    finish[0] = 2;
-    finish[1] = 1;
-    cur_square = start;
-    pcSquare = grid[4][3];
-    begin = grid[4][3];
-    end = grid[2][1];
-
-    grid[4][3]->value = 1;
-    grid[2][1]->value = 2;
-    grid[3][0]->value = 3;
-    grid[3][1]->value = 3;
-    grid[3][2]->value = 3;
-    grid[3][3]->value = 3;
-    grid[3][4]->value = 3;
-    grid[2][3]->value = 3;
-    grid[1][3]->value = 3;
-
-    cl.push_back(grid[3][0]);
-    cl.push_back(grid[3][1]);
-    cl.push_back(grid[3][2]);
-    cl.push_back(grid[3][3]);
-    cl.push_back(grid[3][4]);
-    cl.push_back(grid[2][3]);
-    cl.push_back(grid[1][3]);
-  }
-  */
   cout << "V:" << endl;
   print(grid, 'v');
 
