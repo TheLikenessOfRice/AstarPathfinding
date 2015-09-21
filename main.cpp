@@ -21,15 +21,12 @@ struct Square{
   Square *parent;
 };
 
-//int rows = 5;
-//int columns = 7;
 void print(Square ***grid, char which)
 {
   for(int i = 0; i < ROWS; i++)
   {
     for(int j = 0; j < COLUMNS; j++)
     {
-      //cout << "R: " << i << "C: " << j << " ";
       if(which == 'p')
         cout << grid[i][j]->x << grid[i][j]->y << " ";
       if(which == 'v')
@@ -72,49 +69,7 @@ bool isin(Square *square, vector<Square *> list)
   }
   return false;
 }
-/*
-   void assign_g(Square ***grid, int *start, int *finish)
-   {
-   for(int i = 0; i < ROWS; i++)
-   {
-   for(int j = 0; j < COLUMNS; j++)
-   {
-   cout << "I: " << i << " J: " << j << endl;
-//if((abs(start[0] - i) >= 1) && (abs(start[1] - j)) >= 1)
-//{
-//cout << "Adding 4's" << endl;
-cout << "S0-i: " << abs(start[0] - i) << " S1-j: " << abs(start[1] -j) << endl;
-if(!abs(start[0] - i))
-{
-cout << "case 1" << endl;
-grid[i][j]->g = (abs(start[1] - j)*10);
-//grid[i][j]->g = (abs(start[0] - i)*10)+(abs(start[1] - j)*10);
-}
-else if(!abs(start[1] -j))
-{
-cout << "case 2" << endl;
-grid[i][j]->g = (abs(start[0] - j)*10);
-}
-else if(abs(start[0] - i) == (abs(start[1] - j)))
-{
-cout << "case 3" << endl;
-grid[i][j]->g = (abs(start[0] - i) * 14);
-}
-else if(abs(start[0] - i) > abs(start[1]-j))
-{
-cout << "case 4" << endl;
-grid[i][j]->g += (abs(start[1]-j) * 4) + (abs(start[0] - i) * 10);
-}
-else
-{
-cout << "case 5" << endl;
-grid[i][j]->g += (abs(start[0] - i) * 4) + (abs(start[1] - j) * 10);
-}
-//}
-}
-} 
-}
- */
+
 
 void assign_g(Square ***grid, int *cur_square, int &cur_g)
 {
@@ -129,7 +84,6 @@ void assign_g(Square ***grid, int *cur_square, int &cur_g)
       {
         if((i < ROWS && a < COLUMNS)&&(i >= 0 && a >=0))
         {
-          cout << "I: " << i << " A: " << a << endl;
           if(i == cur_square[0] || a == cur_square[1])
           {
             if(grid[i][a]->g == 0)
@@ -149,34 +103,22 @@ void assign_g(Square ***grid, int *cur_square, int &cur_g)
     }
   }
 }
-/*
-   grid[cur_square[0]-1][cur_square[1]-1]->g += 14;
-   grid[cur_square[0]-1][cur_square[1]]->g += 10;
-   grid[cur_square[0]-1][cur_square[1]+1]->g += 14;
-   grid[cur_square[0]][cur_square[1]-1]->g += 10;
-//grid[cur_square[0]][cur_square[1]]->g += 10;
-grid[cur_square[0]][cur_square[1]+1]->g += 10;
-grid[cur_square[0]+1][cur_square[1]-1]->g += 14;
-grid[cur_square[0]+1][cur_square[1]]->g += 10;
-grid[cur_square[0]+1][cur_square[1]+1]->g += 14;
-}
- */
+
 
 void clear_g(Square ***grid, int *cur_square)
 {
-  cout << "clearing g" << endl;
   for(int i = cur_square[0]-1; i <= cur_square[0]+1; i++)
   {
     for(int a = cur_square[1]-1; a <= cur_square[1]+1; a++)
     {
       if((i < ROWS && a < COLUMNS)&&(i >= 0 && a >= 0))
       {
-        cout << "I: " << i << " A: " << a << endl;
         grid[i][a]->g = 0;
       }
     }
   }
 }
+
 
 void assign_f(Square ***grid, int *cur_square)
 {
@@ -184,12 +126,12 @@ void assign_f(Square ***grid, int *cur_square)
   {
     for(int j = cur_square[1]-1; j <= cur_square[1]+1; j++)
     {
-      //if(i != cur_square[0] && j != cur_square[1])
       if(i >= 0 && i < ROWS && j >= 0 && j < COLUMNS)
         grid[i][j]->f = (grid[i][j]->h + grid[i][j]->g);
     }
   }
 }
+
 
 Square *find_lowest(vector<Square *> list, int &position)
 {
@@ -199,12 +141,10 @@ Square *find_lowest(vector<Square *> list, int &position)
     position = 0;
     for(int i = 1; i < list.size(); i++)
     {
-      cout << "IF: " << list[i]->f << " LF: " << lowest->f << endl;
       if(list[i]->f < lowest->f)
       {
         lowest = list[i]; 
         position = i;
-        cout << "P: " << position << endl;
       }
     }
     return lowest;
@@ -215,17 +155,15 @@ Square *find_lowest(vector<Square *> list, int &position)
   }
 }
 
+
 void add_new(Square ***grid, int *start, vector<Square *> &ol, vector<Square *> &cl)
 {
-  cout << "Adding new" << endl;
-  //int start[2] = {2,1};
   for(int i = start[0]-1; i <= start[0]+1;i++)
   {
     for(int j = start[1]-1; j <= start[1]+1;j++)
     {
       if(i >= 0 && j >= 0)
       {
-        cout << "I: " << i << " J: " << j << endl;
         if((i < ROWS && j < COLUMNS)&&(i >= 0 && j >= 0))
         {
           if((!isin(grid[i][j], cl)) && (!isin(grid[i][j], ol)))
@@ -238,6 +176,7 @@ void add_new(Square ***grid, int *start, vector<Square *> &ol, vector<Square *> 
   }
 }
 
+
 void print_list(vector<Square *> list)
 {
   cout << "List" << endl;
@@ -247,6 +186,7 @@ void print_list(vector<Square *> list)
   }
 }
 
+
 void set_parent(int *cur_square, Square ***grid, vector<Square *> ol, vector<Square *> cl)
 {
   for(int i = cur_square[0]-1; i <= cur_square[0]+1; i++)
@@ -255,23 +195,20 @@ void set_parent(int *cur_square, Square ***grid, vector<Square *> ol, vector<Squ
     {
       if(i >= 0 && i < ROWS && j >= 0 && j < COLUMNS)
       {
-        cout << endl;
-        cout << "I: " << i << " J: " << j << endl;
-        cout << grid[i][j]->parent << " " << isin(grid[i][j], ol) << endl;
-        cout << "checking for parent" << endl;
-        if(isin(grid[i][j], cl) || (!isin(grid[i][j], ol) || (grid[i][j]->parent)) || (i == cur_square[0] && j == cur_square[1]))
+        if(isin(grid[i][j], cl) || (!isin(grid[i][j], ol) || (grid[i][j]->parent)) 
+        || (i == cur_square[0] && j == cur_square[1]))
         {
-          cout << "cant parent" << endl;
+
         }
         else
         {
-          cout << "parent set" << endl;
           grid[i][j]->parent = grid[cur_square[0]][cur_square[1]];
         }
       }
     }
   }
 }
+
 
 void check_parent(Square ***grid, int *cur_square, vector<Square *> ol)
 {
@@ -303,6 +240,7 @@ void check_parent(Square ***grid, int *cur_square, vector<Square *> ol)
   }
 }
 
+
 int find_wall(vector<Square *> cl, Square *wall)
 {
   for(int i = 0; i < cl.size(); i++)
@@ -312,6 +250,7 @@ int find_wall(vector<Square *> cl, Square *wall)
   }
 }
 
+
 bool fileExists(const string &filename){
   struct stat buf;
   if(stat(filename.c_str(), &buf) != -1)
@@ -320,6 +259,7 @@ bool fileExists(const string &filename){
   }
   return false;
 }
+
 
 bool cin_int(int &variable, bool coord){
   if(!(cin >> variable)){
@@ -374,10 +314,6 @@ int &wall_grid4, bool &long_wall, vector<string> &input, ifstream &m){
         return true;
       }
 
-
-      cout << "CE1: " << cin_error << endl;
-
-
       cin_error = cin_int(wall_grid2, true);
 
       if(cin.get() == '\n')
@@ -394,12 +330,11 @@ int &wall_grid4, bool &long_wall, vector<string> &input, ifstream &m){
           << " is outside the domain of the grid. Enter coordinates for a wall square: ";
           bad_input = true;
         }
-
-        cout << "CE4: " << cin_error << endl;
       }
 
       if(cin_error)
         cout << "Invalid Input" << endl;
+
     }while(bad_input);
   }
 
@@ -456,6 +391,7 @@ int main()
   int wall_grid2;
   int wall_grid3;
   int wall_grid4;
+  bool grid_size;
   ifstream m;
   vector<string> input;
 
@@ -488,7 +424,10 @@ int main()
       break;
     }
     else{
+      cin.clear();
+      cin.ignore(numeric_limits<streamsize>::max(), '\n');
       cout << "Incorrect input. Load map?(Y/N):  ";
+
     }
   }while(1);
 
@@ -497,16 +436,31 @@ int main()
     bool cin_error = false;
     if(!preload)
     {
-      cout << "Enter the number of rows: ";
-      cin_error = cin_int(ROWS, false);
+      do{
+        grid_size = false;
 
+        cout << "Enter the number of rows: ";
+        cin_error = cin_int(ROWS, false);
+
+        if(ROWS < 2 || ROWS > 100)
+            grid_size = true;
+
+      }while(grid_size);
     }
     else
       m >> ROWS; 
 
     if(!preload){
-      cout << "Enter the number of columns: ";
-      cin_error = cin_int(COLUMNS, false);
+      do{
+        grid_size = false;
+
+        cout << "Enter the number of columns: ";
+        cin_error = cin_int(COLUMNS, false);
+
+        if(COLUMNS < 2 || COLUMNS > 100)
+          grid_size = true;
+
+      }while(grid_size);
     }
     else
       m >> COLUMNS;
@@ -543,8 +497,6 @@ int main()
       grid[i][j]->parent = NULL;
     } 
   }
-
-  cout << "R: " << ROWS  << " C: " << COLUMNS << endl;
 
   print(grid, 'v');
 
@@ -635,22 +587,11 @@ int main()
     bool cin_error = false;
     bool long_wall = true;
 
-    
-
-
-    cout << "START:W1: " << wall_grid1 << " W2: " << 
-    wall_grid2 << " W3: " << wall_grid3 << " W4: " << wall_grid4 << endl;
-
 
     cout << "Enter the coordinates to add or remove a wall('2 1' for 2 down and 1 across) or enter two coordinates for a section of wall('2 1 9 1') enter 0 to continue: ";
 
     bool zero_entered = wall_input(preload, wall_grid1, wall_grid2,
     wall_grid3, wall_grid4, long_wall, input, m);
-
-
-
-    cout << "W1: " << wall_grid1 << " W2: " << wall_grid2 << " W3: " 
-    << wall_grid3 << " W4: " << wall_grid4 << endl;
 
 
     if(long_wall){
@@ -659,18 +600,11 @@ int main()
     }
 
 
-    cout << "CE5: " << cin_error << endl;
-
     if(!zero_entered){
-
-      cout << "W1: " << wall_grid1 << " W2: " << wall_grid2 <<
-      " W3: " << wall_grid3 << " W4: " << wall_grid4 << endl;
-
 
       if(cin_error){
         cout << "Invalid input. Please try again: ";
       }
-
 
       else if(wall_grid1 < 1 || wall_grid1 > ROWS || wall_grid2 < 1 || wall_grid2 > COLUMNS)
         cout << wall_grid1 << " " << wall_grid2 <<
@@ -680,19 +614,16 @@ int main()
       {
         if(wall_grid3 > 0 && wall_grid3 <= ROWS && wall_grid4 > 0 && wall_grid4 <= COLUMNS)
         {
-          cout << "here" << endl;
           int difference;
           int adj_wall;
           if(wall_grid3 == wall_grid1)
           {
             //horizontal
-            cout << "3 and 1" << endl;
             difference = abs(wall_grid4 - wall_grid2);
             if(wall_grid4 > wall_grid2)
               adj_wall = wall_grid2;
             else
               adj_wall = wall_grid4;
-            cout << "D: " << difference << endl;
             for(int i = 0; i <= difference; i++)
             {
               if(grid[(wall_grid1-1)][(adj_wall-1) + i]->value == '.')
@@ -709,7 +640,6 @@ int main()
           }
           else{
             //vertical
-            cout << "here2" << endl;
             difference = abs(wall_grid3 - wall_grid1);
             if(wall_grid3 > wall_grid1)
               adj_wall = wall_grid1;
@@ -767,9 +697,9 @@ int main()
           cout << "Enter the name of the save file(Include .txt): ";
           cin >> save_file;
 
-          save_file.erase(remove_if(save_file.begin(), save_file.end(), ::isspace), save_file.end());
+          save_file.erase(remove_if(save_file.begin(), save_file.end(), ::isspace),
+          save_file.end());
 
-          cout << save_file.substr(save_file.length()-4) << endl;
           if(save_file.substr(save_file.length()-4) != ".txt")
           {
 
@@ -808,23 +738,18 @@ int main()
       {
         save_grid << input[i];
       }
-      /*if(input[i] == 0)
-        break;
-       */
     }
   }
   cin.ignore();
   cout << "Press Enter to continue" << endl;
   cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
-  cout << "V:" << endl;
-  print(grid, 'v');
-
   set_distance(grid, start, finish);
 
   ol.push_back(begin);
 
   add_new(grid, cur_square, ol, cl);
+
   
   if(ol.size() <= 1){
     cout << "No Solution" << endl;
@@ -837,76 +762,41 @@ int main()
   ol.erase(ol.begin());
   pl.push_back(begin);
 
-  cout << "start_g: " << cur_g << endl; 
-  //assign_g(grid, start, finish);
   assign_g(grid, cur_square, cur_g);
-  cout << "cur_g_after_start: " << cur_g << endl;
   assign_f(grid, cur_square);
 
 
 
   while(lowest != end)
   {
-    cout << endl;
-    cout << endl;
-
-    cout << "Starting New Search" << endl;
-
-    //print open list
-    cout << "OL: ";
-    print_list(ol);
-
-    //print closed list
-    cout << "CL: ";
-    print_list(cl);
-
-    //print parent grid values
-    cout << "P: " << endl;
-    print(grid, 'b');
-
-    cout << "F: " << endl; 
-    print(grid, 'f');
-
     //Find the lowest node around the current node
     lowest = find_lowest(ol, position);
-    cout << "LOW: " << lowest << " END: " << end << endl;
 
     //Edgecase: if there is nowhere left to go
     if(lowest == NULL)
     {
-      cout << "list is empty" << endl;
       break;
     }
-    cout << "LX: " << lowest->x << " " << lowest->y << endl;
 
-    //pl.push_back(lowest);
 
     //Make sure there is the correct parent
     set_parent(cur_square, grid, ol, cl);
     check_parent(grid, cur_square, ol);
-    //determine_parent(pcSquare, cur_square, grid, ol);
-
-
-    //clear g values
-    //clear_g(grid, cur_square);
 
     //change current square
     cur_square[0] = lowest->x;
     cur_square[1] = lowest->y;
 
 
+
     //increment cur_g
     cur_g += (lowest->g - cur_g);
 
-    //set lowest equal to last lowest
-    //lowest->parent = pcSquare;
-    lowest->value = 'c';
 
     //change parent for future lowest
     pcSquare = lowest;
+    
 
-
-    cout << cur_square[0] << " " << cur_square[1] << endl;
 
     //send lowest to closed list so it cannot go back to that square
     cl.push_back(lowest); 
@@ -914,36 +804,25 @@ int main()
     //delete lowest from open list
     if(ol.size())
       ol.erase(ol.begin()+position);
-    //    print_list(ol);
-    //    print_list(cl);
 
     //add new nodes to open list based on new current square
     add_new(grid, cur_square, ol, cl); 
+    
 
     if(ol.size() <= 1){
       cout << "No Solution" << endl;
       exit(0);
     }
-    cout << "V:" << endl;
-    print(grid, 'v');
 
     //assign new g and f values for the section
-    cout << "CG: " << cur_g << endl;
     assign_g(grid, cur_square, cur_g);
-    cout << "LOW G: " << lowest->g << " cur_g after: " << cur_g << endl;
 
 
     assign_f(grid, cur_square);
-    cout << "G:" << endl;
-    print(grid, 'g');
   }
 
-  print(grid, 'b');
-
-  cout << "go to parents" << endl;
   for(Square *parents = end; parents != begin; parents = parents->parent)
   {
-    cout << "go back" << endl;
     if(parents)
     {
       if(parents != end)
@@ -953,21 +832,11 @@ int main()
     }
     else
     {
-      cout << "parents == " << parents << endl;
       break;
     }
   }
   end->value = 'E';
 
-  cout << "H: " << endl;
-  print(grid, 'h');
-  cout << "G: " << endl;
-  print(grid, 'g');
-  cout << "F: " << endl;
-  print(grid, 'f');
-  cout << "XY: " << endl;
-  print(grid, 'p');
-  cout <<  "V: " << endl;
   print(grid, 'v');
 
   return 0;
