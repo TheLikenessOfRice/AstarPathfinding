@@ -325,7 +325,7 @@ int &wall_grid4, bool &long_wall, vector<string> &input, ifstream &m){
         cin_error = cin_int(wall_grid3, true);
         cin_error = cin_int(wall_grid4, true);
 
-        if(wall_grid3 < 1 || wall_grid4 > ROWS || wall_grid4 < 1 || wall_grid4 > COLUMNS){
+        if(wall_grid3 < 1 || wall_grid3 > ROWS || wall_grid4 < 1 || wall_grid4 > COLUMNS){
           cout << wall_grid1 << " " << wall_grid2 << " " << wall_grid3 << " " << wall_grid4 
           << " is outside the domain of the grid. Enter coordinates for a wall square: ";
           bad_input = true;
